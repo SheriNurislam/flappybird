@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flappy bird</title>
+    <style>html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline}:focus{outline:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:"";content:none}table{border-collapse:collapse;border-spacing:0}input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-search-results-button,input[type="search"]::-webkit-search-results-decoration{-webkit-appearance:none;-moz-appearance:none}input[type="search"]{-webkit-appearance:none;-moz-appearance:none;-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box}textarea{overflow:auto;vertical-align:top;resize:vertical}audio,canvas,video{display:inline-block;*display:inline;*zoom:1;max-width:100%}audio:not([controls]){display:none;height:0}[hidden]{display:none}html{font-size:100%;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}a:focus{outline:thin dotted}a:active,a:hover{outline:0}img{border:0;-ms-interpolation-mode:bicubic}figure{margin:0}form{margin:0}fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}legend{border:0;padding:0;white-space:normal;*margin-left:-7px}button,input,select,textarea{font-size:100%;margin:0;vertical-align:baseline;*vertical-align:middle}button,input{line-height:normal}button,select{text-transform:none}button,html input[type="button"],/* 1 */
+      input[type="reset"],input[type="submit"]{-webkit-appearance:button;cursor:pointer;*overflow:visible}button[disabled],html input[disabled]{cursor:default}input[type="checkbox"],input[type="radio"]{box-sizing:border-box;padding:0;*height:13px;*width:13px}input[type="search"]{-webkit-appearance:textfield;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box}input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none}button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}textarea{overflow:auto;vertical-align:top}table{border-collapse:collapse;border-spacing:0}html,button,input,select,textarea{color:#222}::-moz-selection{background:#b3d4fc;text-shadow:none}::selection{background:#b3d4fc;text-shadow:none}img{vertical-align:middle}fieldset{border:0;margin:0;padding:0}textarea{resize:vertical}.chromeframe{margin:.2em 0;background:#ccc;color:#000;padding:.2em 0}body{display:flex;justify-content:center;align-items:center;flex-direction:column;background-color:#fa3b3b}canvas{box-shadow:3px 3px 5px rgba(150,150,150,1)}canvas:hover{cursor:crosshair}#author{text-decoration:none;color:#000;font-size:30px;font-family:Verdana,Geneva,Tahoma,sans-serif;margin-top:30px;letter-spacing:2px;text-shadow:3px 3px 5px #575555;-moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none;user-select:none}#author:hover{opacity:70%}</style>
+    <link rel="shortcut icon" href="/img/bird.png" type="image/png" />
+  </head>
+  <body>
+    <canvas id="canvas" width="288" height="512"></canvas>
+    <a id="author" href="https://vk.com/sherinur">Sheri Nurislam</a>
+    <script>
+    const cvs = document.getElementById("canvas");
+      const ctx = cvs.getContext("2d");
+       // Elements
+      let bird = new Image();
+      let bg = new Image();
+      let fg = new Image();
+      let pipeUp = new Image();
+      let pipeBottom = new Image();
+      
+      bird.src = "img/bird.png";
+      bg.src = "img/bg.png";
+      fg.src = "img/fg.png";
+      pipeUp.src = "img/pipeUp.png";
+      pipeBottom.src = "img/pipeBottom.png";
+      
+      var gap = 90;
+      
+      let fly = new Audio();
+      let score_audio = new Audio();
+      let lose = new Audio();
+      
+      fly.src = "audio/fly.mp3";
+      score_audio.src = "audio/score.mp3";
+      lose.src = "audio/lose.mp3";
+      
+      // When you press any button
+      document.addEventListener("keydown", moveUp);
+      document.addEventListener("click", moveUp);
+      function moveUp() {
+        yPos -= 30;
+        fly.play();
+      }
+      
+      // Creating blocks
+      var pipe = [];
+      
+      pipe[0] = {
+        x: cvs.width,
+        y: 0,
+      };
+      
+      var score = 0;
+      // Bird position
+      var xPos = 10;
+      var yPos = 150;
+      var grav = 1;
+      
+      function draw() {
+        ctx.drawImage(bg, 0, 0);
+      
+        for (var i = 0; i < pipe.length; i++) {
+          ctx.drawImage(pipeUp, pipe[i].x, pipe[i].y);
+          ctx.drawImage(pipeBottom, pipe[i].x, pipe[i].y + pipeUp.height + gap);
+      
+          pipe[i].x--;
+      
+          if (pipe[i].x == 125) {
+            pipe.push({
+              x: cvs.width,
+              y: Math.floor(Math.random() * pipeUp.height) - pipeUp.height,
+            });
+          }
+      
+          // Touch tracking
+          if (
+            (xPos + bird.width >= pipe[i].x &&
+              xPos <= pipe[i].x + pipeUp.width &&
+              (yPos <= pipe[i].y + pipeUp.height ||
+                yPos + bird.height >= pipe[i].y + pipeUp.height + gap)) ||
+            yPos + bird.height >= cvs.height - fg.height
+          ) {
+            // Reload the page
+            lose.play();
+            location.reload();
+            return false;
+          }
+      
+          if (pipe[i].x == 5) {
+            score++;
+            score_audio.play();
+          }
+        }
+      
+        ctx.drawImage(fg, 0, cvs.height - fg.height);
+        ctx.drawImage(bird, xPos, yPos);
+      
+        yPos += grav;
+      
+        ctx.fillStyle = "#000";
+        ctx.font = "24px Verdana";
+        ctx.fillText("Счет: " + score, 10, cvs.height - 20);
+      
+        requestAnimationFrame(draw);
+      }
+      
+      pipeBottom.onload = draw;
+      </script>
+  </body>
+</html>
